@@ -18,10 +18,11 @@ public class Launcher : Photon.PunBehaviour
 
     #region Private Variables
 
+    private bool IsConnecting;
     /// <summary>
     /// This client's version number. Separates users on different versions.
     /// </summary>
-    string GameVersion = "1";
+    private string GameVersion = "1";
     #endregion
 
     #region Public Methods
@@ -33,6 +34,8 @@ public class Launcher : Photon.PunBehaviour
     /// </summary>
     public void Connect()
     {
+        IsConnecting = true;
+
         ProgressLabel.SetActive(true);
         ControlPanel.SetActive(false);
 
@@ -75,7 +78,11 @@ public class Launcher : Photon.PunBehaviour
     {
         Debug.Log("Launcher: OnConnectedToMaster() was called by PUN");
 
-        PhotonNetwork.JoinRandomRoom();
+        // We don't want to do anything unless we're trying to join a room.
+        if(IsConnecting)
+        {
+            PhotonNetwork.JoinRandomRoom();
+        }
     }
 
     public override void OnDisconnectedFromPhoton()
@@ -97,6 +104,13 @@ public class Launcher : Photon.PunBehaviour
     public override void OnJoinedRoom()
     {
         Debug.Log("Launcher: OnJoinedRoom() called by PUN. Now this client is in a room.");
+
+        if(PhotonNetwork.room.PlayerCount == 1)
+        {
+            Debug.Log("Loading the game!");
+
+            PhotonNetwork.LoadLevel("Game");
+        }
     }
 
     #endregion
