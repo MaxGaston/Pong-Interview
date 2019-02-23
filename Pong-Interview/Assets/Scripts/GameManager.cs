@@ -4,9 +4,12 @@ using UnityEngine.SceneManagement;
 public class GameManager : Photon.PunBehaviour
 {
     #region Public Variables
+
+    [Tooltip("The prefab to use for representing the player")]
+    public GameObject PlayerPrefab;
     #endregion
 
-    #region Private Variables
+    #region Private Variable
     #endregion
 
     #region Public Methods
@@ -35,6 +38,22 @@ public class GameManager : Photon.PunBehaviour
     #endregion
 
     #region MonoBehavior CallBacks
+
+    public void Start()
+    {
+        if (PlayerPrefab == null)
+        {
+            Debug.LogError("<Color=Red><a>Missing</a></Color> playerPrefab Reference. Please set it up in GameObject 'Game Manager'", this);
+        }
+        else
+        {
+            float x = 0.0f;
+            if (PhotonNetwork.countOfPlayersInRooms == 0) x = -8.0f;
+            else x = 8.0f;
+            // PhotonNetwork.Instantiate handles spawning and syncing the player object when the game starts.
+            PhotonNetwork.Instantiate(this.PlayerPrefab.name, new Vector3(x, 1f, 0f), Quaternion.identity, 0);
+        }
+    }
     #endregion
 
     #region Photon CallBacks
