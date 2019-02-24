@@ -382,7 +382,7 @@ GameObject:
   - component: {fileID: 616771141}
   - component: {fileID: 616771140}
   m_Layer: 0
-  m_Name: Wall (2)
+  m_Name: Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -473,7 +473,7 @@ GameObject:
   - component: {fileID: 679054284}
   - component: {fileID: 679054283}
   m_Layer: 0
-  m_Name: Wall (1)
+  m_Name: Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -639,7 +639,7 @@ GameObject:
   - component: {fileID: 1130126203}
   - component: {fileID: 1130126202}
   m_Layer: 0
-  m_Name: Wall (3)
+  m_Name: Wall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1036,6 +1036,12 @@ PrefabInstance:
       propertyPath: PlayerPrefab
       value: 
       objectReference: {fileID: 1330179473724712164, guid: 51efab3547cd2d04c96445f5e4441fa0,
+        type: 3}
+    - target: {fileID: 5051748628931265743, guid: fc0ebb157f6514a4fbfe9b3065c745cc,
+        type: 3}
+      propertyPath: BallPrefab
+      value: 
+      objectReference: {fileID: 3722251590403198395, guid: 3416f4b01f9e7bb45a1a1b05f3df50a1,
         type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fc0ebb157f6514a4fbfe9b3065c745cc, type: 3}

@@ -5,11 +5,16 @@ public class GameManager : Photon.PunBehaviour
 {
     #region Public Variables
 
-    [Tooltip("The prefab to use for representing the player")]
+    [Tooltip("The prefab to use for representing the player.")]
     public GameObject PlayerPrefab;
+
+    [Tooltip("The prefab to use for representing the ball.")]
+    public GameObject BallPrefab;
     #endregion
 
-    #region Private Variable
+    #region Private Variables
+
+    GameObject BallRef;
     #endregion
 
     #region Public Methods
@@ -49,9 +54,17 @@ public class GameManager : Photon.PunBehaviour
         {
             float x = 0.0f;
             if (PhotonNetwork.countOfPlayersInRooms == 0) x = -8.0f;
-            else x = 8.0f;
+            else
+            {
+                x = 8.0f;
+            }
             // PhotonNetwork.Instantiate handles spawning and syncing the player object when the game starts.
             PhotonNetwork.Instantiate(this.PlayerPrefab.name, new Vector3(x, 1f, 0f), Quaternion.identity, 0);
+        }
+
+        if(BallPrefab == null)
+        {
+            Debug.LogError("<Color=Red><a>Missing</a></Color> BallPrefab Reference. Please set it up in GameObject 'Game Manager'", this);
         }
     }
     #endregion
@@ -68,26 +81,19 @@ public class GameManager : Photon.PunBehaviour
 
     public override void OnPhotonPlayerConnected(PhotonPlayer other)
     {
-        /*
-        if (PhotonNetwork.isMasterClient)
+        if(PhotonNetwork.room.PlayerCount == 2)
         {
-            Debug.Log("OnPhotonPlayerConnected isMasterClient " + PhotonNetwork.isMasterClient);
-
-
-            LoadGame();
-        }*/
+            BallRef = PhotonNetwork.Instantiate(this.BallPrefab.name, new Vector3(0f, 1f, 0f), Quaternion.identity, 0);
+        }
     }
 
     public override void OnPhotonPlayerDisconnected(PhotonPlayer other)
     {
-        /*
-        if (PhotonNetwork.isMasterClient)
-        {
-            Debug.Log("OnPhotonPlayerDisonnected isMasterClient " + PhotonNetwork.isMasterClient);
+        // If someone leaves, move the remaining player to the left side of the field.
+        GameObject player = (GameObject)PhotonNetwork.playerList[0].TagObject;
+        player.transform.SetPositionAndRotation(new Vector3(-8.0f, 1.0f, 0), Quaternion.identity);
 
-
-            LoadGame();
-        }*/
+        if(BallRef != null) PhotonNetwork.Destroy(BallRef);
     }
     #endregion
 }
