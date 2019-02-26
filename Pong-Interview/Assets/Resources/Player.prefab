@@ -108,6 +108,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MoveSpeed: 300
+  TurnSpeed: 10
+  GuidePrefab: {fileID: 8017761021040314483, guid: a0c1324187fa92448b510f42402fb21e,
+    type: 3}
 --- !u!114 &9116603016930476484
 MonoBehaviour:
   m_ObjectHideFlags: 0

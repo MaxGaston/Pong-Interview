@@ -38,4 +38,8 @@ MonoBehaviour:
   - RequestForPickupItems
   - RequestForPickupTimes
   - ServeBall
+  - SetServe
+  - StartTimer
+  - Serve
+  - UpdateBall
   DisableAutoOpenWizard: 1

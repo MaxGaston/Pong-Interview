@@ -9,12 +9,36 @@ public class GameManager : Photon.PunBehaviour
     public Button HostButton;
     public Button JoinButton;
     public Button LeaveButton;
+    public Button ServeButton;
 
     // Reference to the actual player object.
     public GameObject PlayerPrefab;
 
+    // Reference to the local player after instantiation.
+    private GameObject PlayerRef;
+
+    public GameObject WhiteBall;
+    public GameObject BlackBall;
+
+    private int WhiteBallID;
+    private int BlackBallID;
+
+    public float BallSpeed = 5.0f;
+    
     // Distance from the center of the screen that players will spawn.
-    public float SpawnDistance = 2.375f;
+    public float SpawnDistance = 10.0f;
+    public float SpawnHeight = 1.5f;
+
+    [PunRPC]
+    public void UpdateBall(int ballID, Vector3 pos, Vector3 vel)
+    {
+        Debug.Log("<color=blue>Update Ball</color>");
+
+        PhotonView ball = PhotonView.Find(ballID);
+
+        ball.gameObject.transform.position = pos;
+        ball.GetComponent<Rigidbody>().velocity = vel;
+    }
 
     public void HostGame()
     {
@@ -29,6 +53,20 @@ public class GameManager : Photon.PunBehaviour
     public void LeaveGame()
     {
         PhotonNetwork.LeaveRoom();
+    }
+
+    public void Serve()
+    {
+        Debug.Log("<color=blue>Serve</color>");
+
+        WhiteBallID = WhiteBall.GetComponent<BallController>().photonView.viewID;
+
+        int x = Random.Range(-360, 360);
+        int y = Random.Range(-360, 360);
+        Vector3 vel = new Vector3(x, y, 0).normalized * Time.deltaTime * BallSpeed;//Random.insideUnitSphere.normalized * Time.deltaTime * BallSpeed;
+        vel.z = 0;
+
+        photonView.RPC("UpdateBall", PhotonTargets.All, WhiteBallID, new Vector3(0, SpawnHeight, -1), vel);
     }
 
     public override void OnConnectedToMaster()
@@ -68,28 +106,40 @@ public class GameManager : Photon.PunBehaviour
          *  If there isn't, spawn on the left side and update LeftSideFree to false.
          */
         bool LeftSideFree = (bool)PhotonNetwork.room.CustomProperties["LeftSideFree"];
-        Vector3 spawnPoint;
-        if(LeftSideFree)
+        Vector3 spawnPoint = new Vector3(SpawnDistance, SpawnHeight, -1);
+        if (LeftSideFree)
         {
-            spawnPoint = new Vector3(-SpawnDistance, 2.375f, -1);
-            PhotonNetwork.Instantiate(this.PlayerPrefab.name, spawnPoint, Quaternion.identity, 0);
+            spawnPoint.x = -SpawnDistance;
+            PlayerRef = PhotonNetwork.Instantiate(this.PlayerPrefab.name, spawnPoint, Quaternion.identity, 0);
             Hashtable Props = new Hashtable() { { "LeftSideFree", false } };
             PhotonNetwork.room.SetCustomProperties(Props);
         }
         else
         {
-            spawnPoint = new Vector3(SpawnDistance, 2.375f, -1);
-            PhotonNetwork.Instantiate(this.PlayerPrefab.name, spawnPoint, Quaternion.identity, 0);
+            PlayerRef = PhotonNetwork.Instantiate(this.PlayerPrefab.name, spawnPoint, Quaternion.identity, 0);
         }
 
         // Remember which side this player was spawned on.
         gameObject.transform.position = spawnPoint;
+
+        // DEBUG
+        ServeButton.interactable = true;
     }
 
     public override void OnLeftRoom()
     {
         Debug.Log("<color=blue>Left Room</color>");
         LeaveButton.interactable = false;
+    }
+
+    public override void OnPhotonPlayerConnected(PhotonPlayer newPlayer)
+    {
+        Debug.Log("<color=blue>Player Connected</color>");
+
+        if (PhotonNetwork.room.PlayerCount == 2)
+        {
+            ServeButton.interactable = true;
+        }
     }
 
     public override void OnPhotonPlayerDisconnected(PhotonPlayer otherPlayer)

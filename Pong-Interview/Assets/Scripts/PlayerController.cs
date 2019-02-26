@@ -3,6 +3,8 @@
 public class PlayerController : Photon.PunBehaviour
 {
     public float MoveSpeed = 5.0f;
+    public float TurnSpeed = 10.0f;
+
     private Rigidbody RBody;
 
     public override void OnPhotonInstantiate(PhotonMessageInfo info)
@@ -27,7 +29,7 @@ public class PlayerController : Photon.PunBehaviour
             return;
         }
 
-        float delta = Input.GetAxis("Vertical") * MoveSpeed;
-        RBody.velocity = new Vector3(0, delta, 0) * Time.fixedDeltaTime;
+        float delta = Input.GetAxis("Vertical");
+        RBody.velocity = new Vector3(0, delta, 0) * Time.fixedDeltaTime * MoveSpeed;
     }
 }
