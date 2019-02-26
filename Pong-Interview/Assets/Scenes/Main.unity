@@ -1411,9 +1411,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc84b4c6f64d7f840a0c9afd32d63e43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Loglevel: 0
+  LogLevel: 1
   HostButton: {fileID: 241496752}
   JoinButton: {fileID: 2131538447}
   LeaveButton: {fileID: 1312808302}
   PlayerPrefab: {fileID: 2857206170708353728, guid: 51efab3547cd2d04c96445f5e4441fa0,
     type: 3}
+  SpawnDistance: 10
