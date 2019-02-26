@@ -28,14 +28,6 @@ public class GameManager : Photon.PunBehaviour
 
     public void LeaveGame()
     {
-        // Tell the room the left side is free if we were on that side.
-        float xPos = gameObject.transform.position.x;
-        if (xPos < 0)
-        {
-            Hashtable Props = new Hashtable() { { "LeftSideFree", true } };
-            PhotonNetwork.room.SetCustomProperties(Props);
-        }
-
         PhotonNetwork.LeaveRoom();
     }
 
@@ -98,6 +90,17 @@ public class GameManager : Photon.PunBehaviour
     {
         Debug.Log("<color=blue>Left Room</color>");
         LeaveButton.interactable = false;
+    }
+
+    public override void OnPhotonPlayerDisconnected(PhotonPlayer otherPlayer)
+    {
+        // Tell the room the left side is free if we're on the right.
+        float xPos = gameObject.transform.position.x;
+        if (xPos > 0)
+        {
+            Hashtable Props = new Hashtable() { { "LeftSideFree", true } };
+            PhotonNetwork.room.SetCustomProperties(Props);
+        }
     }
 
     private void Awake()
