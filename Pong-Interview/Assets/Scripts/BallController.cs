@@ -13,9 +13,9 @@ public class BallController : Photon.PunBehaviour
             Vector3 vel = GetComponent<Rigidbody>().velocity;
             vel.y *= -1;
 
-            Debug.Log("X = " + vel.x + " Y = " + vel.y + " Z = " + vel.z);
+            Debug.Log("<color=blue>OnCollision</color>: X = " + vel.x + " Y = " + vel.y + " Z = " + vel.z);
 
-            GameManager.GetComponent<GameManager>().photonView.RPC("UpdateBall", PhotonTargets.All, photonView.viewID, gameObject.transform.position, vel);
+            GameManager.GetComponent<GameManager>().photonView.RPC("UpdateBall", PhotonTargets.Others, photonView.viewID, gameObject.transform.position, vel);
         }
     }
 }

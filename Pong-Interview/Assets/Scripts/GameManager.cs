@@ -32,7 +32,7 @@ public class GameManager : Photon.PunBehaviour
     [PunRPC]
     public void UpdateBall(int ballID, Vector3 pos, Vector3 vel)
     {
-        Debug.Log("<color=blue>Update Ball</color>");
+        Debug.Log("<color=blue>Update Ball</color>: X = " + vel.x + " Y = " + vel.y + " Z = " + vel.z);
 
         PhotonView ball = PhotonView.Find(ballID);
 
@@ -57,15 +57,12 @@ public class GameManager : Photon.PunBehaviour
 
     public void Serve()
     {
-        Debug.Log("<color=blue>Serve</color>");
-
         WhiteBallID = WhiteBall.GetComponent<BallController>().photonView.viewID;
-
-        int x = Random.Range(-360, 360);
-        int y = Random.Range(-360, 360);
-        Vector3 vel = new Vector3(x, y, 0).normalized * Time.deltaTime * BallSpeed;//Random.insideUnitSphere.normalized * Time.deltaTime * BallSpeed;
+        
+        Vector3 vel = Random.insideUnitSphere.normalized * Time.deltaTime * BallSpeed;
         vel.z = 0;
 
+        Debug.Log("<color=blue>Serve</color>: X = " + vel.x + " Y = " + vel.y + " Z = " + vel.z);
         photonView.RPC("UpdateBall", PhotonTargets.All, WhiteBallID, new Vector3(0, SpawnHeight, -1), vel);
     }
 
