@@ -9,6 +9,11 @@ public class PlayerController : Photon.PunBehaviour
     private Rigidbody RB;
     private float Angle = 0;
 
+    public override void OnPhotonInstantiate(PhotonMessageInfo info)
+    {
+        info.sender.TagObject = this;
+    }
+
     private void Start()
     {
         RB = GetComponent<Rigidbody>();

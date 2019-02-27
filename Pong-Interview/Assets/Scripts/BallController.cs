@@ -4,8 +4,8 @@ using ExitGames.Client.Photon;
 public class BallController : Photon.PunBehaviour
 {
     public GameObject Player;
-    public GameObject GameManager;
-    private GameManager GM;
+    public GameManager GameManager;
+    public ScoreKeeper ScoreKeeper;
     
     public float BallSpeed;
     public float SpawnHeight;
@@ -13,8 +13,7 @@ public class BallController : Photon.PunBehaviour
     
     private void Start()
     {
-        GM = GameManager.GetComponent<GameManager>();
-        GoalDistance = GM.SpawnDistance;
+        GoalDistance = GameManager.SpawnDistance;
     }
 
     public void OnCollisionEnter(Collision collision)
@@ -29,16 +28,23 @@ public class BallController : Photon.PunBehaviour
         else
         {
             int ping = PhotonNetwork.GetPing();
-            GM.photonView.RPC("UpdateBall", PhotonTargets.Others, photonView.viewID, transform.position, velocity, ping);
+            GameManager.photonView.RPC("UpdateBall", PhotonTargets.Others, photonView.viewID, transform.position, velocity, ping);
         }
     }
 
     private void FixedUpdate()
     {
-        // Ball has left the field
-        if(transform.position.x >= GoalDistance || transform.position.x <= -GoalDistance)
+        // Ball has exited right
+        if(transform.position.x >= GoalDistance)
         {
-            GM.photonView.RPC("ResetBalls", PhotonTargets.All);
+            GameManager.photonView.RPC("ResetBalls", PhotonTargets.All);
+            ScoreKeeper.Score(true, photonView.viewID);
+        }
+        // Ball has exited left
+        if(transform.position.x <= -GoalDistance)
+        {
+            GameManager.photonView.RPC("ResetBalls", PhotonTargets.All);
+            ScoreKeeper.Score(false, photonView.viewID);
         }
     }
 }

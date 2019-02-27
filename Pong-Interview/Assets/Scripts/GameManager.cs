@@ -10,6 +10,7 @@ public class GameManager : Photon.PunBehaviour
     public Button[] Buttons;
     private Button HostButton;
     private Button JoinButton;
+    private Button ResetButton;
     private Button LeaveButton;
     private Button ServeButton;
      
@@ -22,6 +23,8 @@ public class GameManager : Photon.PunBehaviour
 
     private Vector3 LeftSpawnPoint;
     private Vector3 RightSpawnPoint;
+
+    public ScoreKeeper ScoreKeeper;
     #endregion
 
     #region Functions
@@ -38,6 +41,18 @@ public class GameManager : Photon.PunBehaviour
     public void LeaveGame()
     {
         PhotonNetwork.LeaveRoom();
+    }
+
+    public void ResetGame()
+    {
+        ResetBalls();
+        ScoreKeeper.ResetScores();
+    }
+
+    [PunRPC]
+    public void ResetAll()
+    {
+        photonView.RPC("ResetGame", PhotonTargets.All);
     }
 
     /// <summary>
@@ -141,6 +156,8 @@ public class GameManager : Photon.PunBehaviour
         // Once in a room, we can now leave but no longer host/join.
         HostButton.interactable = false;
         JoinButton.interactable = false;
+
+        //ResetButton.interactable = true;
         LeaveButton.interactable = true;
 
         /*
@@ -168,7 +185,9 @@ public class GameManager : Photon.PunBehaviour
     public override void OnLeftRoom()
     {
         Debug.Log("<color=blue>Left Room</color>");
+        //ResetButton.interactable = false;
         LeaveButton.interactable = false;
+        ResetGame();
     }
 
     public override void OnPhotonPlayerConnected(PhotonPlayer newPlayer)
@@ -184,11 +203,13 @@ public class GameManager : Photon.PunBehaviour
     public override void OnPhotonPlayerDisconnected(PhotonPlayer otherPlayer)
     {
         // Tell the room the left side is free if we're on the right.
-        if (gameObject.transform.position == LeftSpawnPoint)
+        PlayerController pc = otherPlayer.TagObject as PlayerController;
+        if (pc.transform.position.x < 0)
         {
             Hashtable Props = new Hashtable() { { "LeftSideFree", true } };
             PhotonNetwork.room.SetCustomProperties(Props);
         }
+        ResetGame();
     }
 
     private void Awake()
@@ -210,6 +231,7 @@ public class GameManager : Photon.PunBehaviour
         
         HostButton = Buttons[0];
         JoinButton = Buttons[1];
+        //ResetButton = Buttons[2];
         LeaveButton = Buttons[2];
         ServeButton = Buttons[3];
     }
