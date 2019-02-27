@@ -4,29 +4,77 @@ using UnityEngine.UI;
 
 public class GameManager : Photon.PunBehaviour
 {
+    #region Variables
     public PhotonLogLevel LogLevel = PhotonLogLevel.Informational;
 
-    public Button HostButton;
-    public Button JoinButton;
-    public Button LeaveButton;
-    public Button ServeButton;
-
-    // Reference to the actual player object.
+    public Button[] Buttons;
+    private Button HostButton;
+    private Button JoinButton;
+    private Button LeaveButton;
+    private Button ServeButton;
+     
     public GameObject PlayerPrefab;
-
-    // Reference to the local player after instantiation.
-    private GameObject PlayerRef;
 
     public GameObject WhiteBall;
     public GameObject BlackBall;
 
+    public GameObject LeftScore;
+    public GameObject RightScore;
+
     private int WhiteBallID;
     private int BlackBallID;
 
-    // Distance from the center of the screen that players will spawn.
-    public float SpawnDistance = 10.0f;
-    public float PlayerYStart = 1.5f;
+    public float SpawnDistance = 12.0f;
 
+    private Vector3 LeftSpawnPoint;
+    private Vector3 RightSpawnPoint;
+
+    private int LeftScoreID;
+    private int RightScoreID;
+    #endregion
+
+    #region Functions
+    public void HostGame()
+    {
+        PhotonNetwork.CreateRoom(null, new RoomOptions() { MaxPlayers = 2 }, null);
+    }
+
+    public void JoinGame()
+    {
+        PhotonNetwork.JoinRandomRoom();
+    }
+
+    public void LeaveGame()
+    {
+        PhotonNetwork.LeaveRoom();
+    }
+
+    private void ServeBall(int ballID)
+    {
+        int ping = PhotonNetwork.GetPing();
+        PhotonView ball = PhotonView.Find(ballID);
+
+        float angle = Random.Range(0, 180);
+        float bx = Mathf.Cos(Mathf.Deg2Rad * angle) * ball.GetComponent<BallController>().BallSpeed;
+        float by = Mathf.Sin(Mathf.Deg2Rad * angle) * ball.GetComponent<BallController>().BallSpeed;
+
+        Vector3 vel = new Vector3(bx, by, 0);
+
+        ball.transform.position = new Vector3(0, ball.GetComponent<BallController>().SpawnHeight, -1);
+        photonView.RPC("UpdateBall", PhotonTargets.Others, ballID, new Vector3(0, ball.GetComponent<BallController>().SpawnHeight, -1), vel, ping);
+        ball.GetComponent<Rigidbody>().velocity = vel;
+    }
+
+    public void ServeBalls()
+    {
+        ServeBall(WhiteBallID);
+        ServeBall(BlackBallID);
+    }
+
+    
+    #endregion
+
+    #region RPCs
     [PunRPC]
     public void UpdateBall(int ballID, Vector3 pos, Vector3 vel, int remotePing)
     {
@@ -54,43 +102,32 @@ public class GameManager : Photon.PunBehaviour
         ResetBall(BlackBallID);
     }
 
-    public void HostGame()
+    [PunRPC]
+    public void IncrementScore(bool left, int id)
     {
-        PhotonNetwork.CreateRoom(null, new RoomOptions() { MaxPlayers = 2 }, null);
+        if(id == WhiteBallID)
+        {
+            GameObject label = left ? LeftScore : RightScore;
+            Text text = label.gameObject.GetComponent<Text>();
+
+            int inc = int.Parse(text.text) + 1;
+            text.text = inc.ToString();
+        }
+        else if(id == BlackBallID)
+        {
+            photonView.RPC("ResetScores", PhotonTargets.Others);
+        }
     }
 
-    public void JoinGame()
+    [PunRPC]
+    public void ResetScores()
     {
-        PhotonNetwork.JoinRandomRoom();
+        LeftScore.GetComponent<Text>().text = "0";
+        RightScore.GetComponent<Text>().text = "0";
     }
+    #endregion
 
-    public void LeaveGame()
-    {
-        PhotonNetwork.LeaveRoom();
-    }
-
-    public void ServeBalls()
-    {
-        ServeBall(WhiteBallID);
-        ServeBall(BlackBallID);
-    }
-
-    private void ServeBall(int ballID)
-    {
-        int ping = PhotonNetwork.GetPing();
-        PhotonView ball = PhotonView.Find(ballID);
-
-        float angle = Random.Range(0, 180);
-        float bx = Mathf.Cos(Mathf.Deg2Rad * angle) * ball.GetComponent<BallController>().BallSpeed;
-        float by = Mathf.Sin(Mathf.Deg2Rad * angle) * ball.GetComponent<BallController>().BallSpeed;
-
-        Vector3 vel = new Vector3(bx, by, 0);
-
-        ball.transform.position = new Vector3(0, ball.GetComponent<BallController>().SpawnHeight, -1);
-        photonView.RPC("UpdateBall", PhotonTargets.Others, ballID, new Vector3(0, ball.GetComponent<BallController>().SpawnHeight, -1), vel, ping);
-        ball.GetComponent<Rigidbody>().velocity = vel;
-    }
-
+    #region Callbacks
     public override void OnConnectedToMaster()
     {
         Debug.Log("<color=blue>Connected to Master</color>");
@@ -128,33 +165,36 @@ public class GameManager : Photon.PunBehaviour
          *  If there isn't, spawn on the left side and update LeftSideFree to false.
          */
         bool LeftSideFree = (bool)PhotonNetwork.room.CustomProperties["LeftSideFree"];
-        Vector3 spawnPoint = new Vector3(SpawnDistance, PlayerYStart, -1);
         if (LeftSideFree)
         {
-            spawnPoint.x = -SpawnDistance;
-            PlayerRef = PhotonNetwork.Instantiate(this.PlayerPrefab.name, spawnPoint, Quaternion.identity, 0);
+            PhotonNetwork.Instantiate(this.PlayerPrefab.name, LeftSpawnPoint, Quaternion.identity, 0);
             Hashtable Props = new Hashtable() { { "LeftSideFree", false } };
             PhotonNetwork.room.SetCustomProperties(Props);
+            gameObject.transform.position = LeftSpawnPoint;
         }
         else
         {
-            PlayerRef = PhotonNetwork.Instantiate(this.PlayerPrefab.name, spawnPoint, Quaternion.identity, 0);
+            PhotonNetwork.Instantiate(this.PlayerPrefab.name, RightSpawnPoint, Quaternion.identity, 0);
+            gameObject.transform.position = RightSpawnPoint;
         }
-
-        // Remember which side this player was spawned on.
-        gameObject.transform.position = spawnPoint;
 
         // DEBUG
         ServeButton.interactable = true;
 
+        // Get the viewID for each ball to use later.
         WhiteBallID = WhiteBall.GetComponent<BallController>().photonView.viewID;
         BlackBallID = BlackBall.GetComponent<BallController>().photonView.viewID;
+
+        LeftScoreID = LeftScore.GetComponent<ScoreManager>().photonView.viewID;
+        RightScoreID = RightScore.GetComponent<ScoreManager>().photonView.viewID;
     }
 
     public override void OnLeftRoom()
     {
         Debug.Log("<color=blue>Left Room</color>");
         LeaveButton.interactable = false;
+
+        ResetScores();
     }
 
     public override void OnPhotonPlayerConnected(PhotonPlayer newPlayer)
@@ -170,12 +210,13 @@ public class GameManager : Photon.PunBehaviour
     public override void OnPhotonPlayerDisconnected(PhotonPlayer otherPlayer)
     {
         // Tell the room the left side is free if we're on the right.
-        float xPos = gameObject.transform.position.x;
-        if (xPos > 0)
+        if (gameObject.transform.position == LeftSpawnPoint)
         {
             Hashtable Props = new Hashtable() { { "LeftSideFree", true } };
             PhotonNetwork.room.SetCustomProperties(Props);
         }
+
+        ResetScores();
     }
 
     private void Awake()
@@ -190,5 +231,14 @@ public class GameManager : Photon.PunBehaviour
     private void Start()
     {
         PhotonNetwork.ConnectUsingSettings("1.0");
+
+        LeftSpawnPoint = new Vector3(-SpawnDistance, 1.5f, -1);
+        RightSpawnPoint = new Vector3(SpawnDistance, 1.5f, -1);
+        
+        HostButton = Buttons[0];
+        JoinButton = Buttons[1];
+        LeaveButton = Buttons[2];
+        ServeButton = Buttons[3];
     }
+    #endregion
 }

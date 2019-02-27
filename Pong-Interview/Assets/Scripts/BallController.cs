@@ -56,15 +56,13 @@ public class BallController : Photon.PunBehaviour
     {
         if(transform.position.x >= GoalDistance)
         {
-            int score = int.Parse(LeftScore.text) + 1;
-            LeftScore.text = score.ToString();
             GM.photonView.RPC("ResetBalls", PhotonTargets.All);
+            GM.photonView.RPC("IncrementScore", PhotonTargets.Others, false, photonView.viewID);
         }
         else if(transform.position.x <= -GoalDistance)
         {
-            int score = int.Parse(RightScore.text) + 1;
-            RightScore.text = score.ToString();
             GM.photonView.RPC("ResetBalls", PhotonTargets.All);
+            GM.photonView.RPC("IncrementScore", PhotonTargets.Others, true, photonView.viewID);
         }
     }
 }

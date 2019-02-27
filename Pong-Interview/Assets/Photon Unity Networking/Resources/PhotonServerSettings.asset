@@ -44,4 +44,6 @@ MonoBehaviour:
   - UpdateBall
   - ResetBall
   - ResetBalls
+  - IncrementScore
+  - ResetScores
   DisableAutoOpenWizard: 1

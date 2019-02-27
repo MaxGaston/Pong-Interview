@@ -6,11 +6,6 @@ public class PlayerController : Photon.PunBehaviour
     public float TurnSpeed = 10.0f;
 
     private Rigidbody RBody;
-    
-    public override void OnPhotonInstantiate(PhotonMessageInfo info)
-    {
-        info.sender.TagObject = this.gameObject;
-    }
 
     private void Start()
     {
