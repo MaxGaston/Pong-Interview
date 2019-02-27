@@ -21,6 +21,9 @@ public class GameManager : Photon.PunBehaviour
     public GameObject LeftScore;
     public GameObject RightScore;
 
+    private int LeftScoreVal = 0;
+    private int RightScoreVal = 0;
+
     private int WhiteBallID;
     private int BlackBallID;
 
@@ -202,7 +205,7 @@ public class GameManager : Photon.PunBehaviour
         }
 
         // DEBUG
-        ServeButton.interactable = true;
+        if(PhotonNetwork.isMasterClient) ServeButton.interactable = true;
 
         // Get the viewID for each ball to use later.
         WhiteBallID = WhiteBall.GetComponent<BallController>().photonView.viewID;
@@ -227,7 +230,7 @@ public class GameManager : Photon.PunBehaviour
 
         if (PhotonNetwork.room.PlayerCount == 2)
         {
-            ServeButton.interactable = true;
+            if(PhotonNetwork.isMasterClient) ServeButton.interactable = true;
         }
     }
 

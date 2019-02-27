@@ -4,12 +4,14 @@ public class PlayerController : Photon.PunBehaviour
 {
     public float MoveSpeed = 5.0f;
     public float TurnSpeed = 10.0f;
+    public float MaxAngle = 45.0f;
 
     private Rigidbody RBody;
+    private float Angle = 0;
 
     private void Start()
     {
-        RBody = GetComponent<Rigidbody>();    
+        RBody = GetComponent<Rigidbody>();
     }
 
     private void FixedUpdate()
@@ -26,5 +28,9 @@ public class PlayerController : Photon.PunBehaviour
 
         float delta = Input.GetAxis("Vertical");
         RBody.velocity = new Vector3(0, delta, 0) * Time.fixedDeltaTime * MoveSpeed;
+        
+        Angle -= Input.GetAxis("Horizontal") * TurnSpeed;
+        Angle = Mathf.Clamp(Angle, -MaxAngle, MaxAngle);
+        transform.localRotation = Quaternion.AngleAxis(Angle, Vector3.back);
     }
 }

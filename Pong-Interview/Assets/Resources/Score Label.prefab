@@ -93,6 +93,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4de1ef1d0bc2dd4d8bfeaf124262bf7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Score: 0
 --- !u!114 &3826781716460651156
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109,12 +110,12 @@ MonoBehaviour:
   group: 0
   OwnerShipWasTransfered: 0
   prefixBackup: -1
-  synchronization: 0
+  synchronization: 3
   onSerializeTransformOption: 3
   onSerializeRigidBodyOption: 2
   ownershipTransfer: 0
   ObservedComponents:
-  - {fileID: 0}
+  - {fileID: 5825652104704097097}
   ObservedComponentsFoldoutOpen: 1
   viewIdField: 0
   instantiationId: -1
