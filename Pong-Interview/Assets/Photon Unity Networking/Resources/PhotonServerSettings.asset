@@ -42,4 +42,6 @@ MonoBehaviour:
   - StartTimer
   - Serve
   - UpdateBall
+  - ResetBall
+  - ResetBalls
   DisableAutoOpenWizard: 1

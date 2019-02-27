@@ -109,8 +109,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MoveSpeed: 300
   TurnSpeed: 10
-  GuidePrefab: {fileID: 8017761021040314483, guid: a0c1324187fa92448b510f42402fb21e,
-    type: 3}
 --- !u!114 &9116603016930476484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -153,10 +151,10 @@ MonoBehaviour:
   m_PositionModel:
     SynchronizeEnabled: 1
     TeleportEnabled: 1
-    TeleportIfDistanceGreaterThan: 10
-    InterpolateOption: 2
+    TeleportIfDistanceGreaterThan: 5
+    InterpolateOption: 4
     InterpolateMoveTowardsSpeed: 1
-    InterpolateLerpSpeed: 1
+    InterpolateLerpSpeed: 10
     InterpolateMoveTowardsAcceleration: 2
     InterpolateMoveTowardsDeceleration: 2
     InterpolateSpeedCurve:

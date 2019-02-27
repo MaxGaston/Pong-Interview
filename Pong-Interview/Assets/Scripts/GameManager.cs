@@ -23,21 +23,35 @@ public class GameManager : Photon.PunBehaviour
     private int WhiteBallID;
     private int BlackBallID;
 
-    public float BallSpeed = 5.0f;
-    
     // Distance from the center of the screen that players will spawn.
     public float SpawnDistance = 10.0f;
-    public float SpawnHeight = 1.5f;
+    public float PlayerYStart = 1.5f;
 
     [PunRPC]
-    public void UpdateBall(int ballID, Vector3 pos, Vector3 vel)
+    public void UpdateBall(int ballID, Vector3 pos, Vector3 vel, int remotePing)
     {
-        Debug.Log("<color=blue>Update Ball</color>: X = " + vel.x + " Y = " + vel.y + " Z = " + vel.z);
-
         PhotonView ball = PhotonView.Find(ballID);
 
-        ball.gameObject.transform.position = pos;
+        int ping = PhotonNetwork.GetPing();
+        float delay = (float)(ping / 2 + remotePing / 2);
+
+        ball.gameObject.transform.position = pos + (vel * delay / 1000);
         ball.GetComponent<Rigidbody>().velocity = vel;
+    }
+
+    [PunRPC]
+    public void ResetBall(int ballID)
+    {
+        PhotonView ball = PhotonView.Find(ballID);
+        ball.gameObject.transform.position = new Vector3(0, ball.gameObject.GetComponent<BallController>().SpawnHeight, -1);
+        ball.gameObject.GetComponent<Rigidbody>().velocity *= 0;
+    }
+
+    [PunRPC]
+    public void ResetBalls()
+    {
+        ResetBall(WhiteBallID);
+        ResetBall(BlackBallID);
     }
 
     public void HostGame()
@@ -55,15 +69,26 @@ public class GameManager : Photon.PunBehaviour
         PhotonNetwork.LeaveRoom();
     }
 
-    public void Serve()
+    public void ServeBalls()
     {
-        WhiteBallID = WhiteBall.GetComponent<BallController>().photonView.viewID;
-        
-        Vector3 vel = Random.insideUnitSphere.normalized * Time.deltaTime * BallSpeed;
-        vel.z = 0;
+        ServeBall(WhiteBallID);
+        ServeBall(BlackBallID);
+    }
 
-        Debug.Log("<color=blue>Serve</color>: X = " + vel.x + " Y = " + vel.y + " Z = " + vel.z);
-        photonView.RPC("UpdateBall", PhotonTargets.All, WhiteBallID, new Vector3(0, SpawnHeight, -1), vel);
+    private void ServeBall(int ballID)
+    {
+        int ping = PhotonNetwork.GetPing();
+        PhotonView ball = PhotonView.Find(ballID);
+
+        float angle = Random.Range(0, 180);
+        float bx = Mathf.Cos(Mathf.Deg2Rad * angle) * ball.GetComponent<BallController>().BallSpeed;
+        float by = Mathf.Sin(Mathf.Deg2Rad * angle) * ball.GetComponent<BallController>().BallSpeed;
+
+        Vector3 vel = new Vector3(bx, by, 0);
+
+        ball.transform.position = new Vector3(0, ball.GetComponent<BallController>().SpawnHeight, -1);
+        photonView.RPC("UpdateBall", PhotonTargets.Others, ballID, new Vector3(0, ball.GetComponent<BallController>().SpawnHeight, -1), vel, ping);
+        ball.GetComponent<Rigidbody>().velocity = vel;
     }
 
     public override void OnConnectedToMaster()
@@ -103,7 +128,7 @@ public class GameManager : Photon.PunBehaviour
          *  If there isn't, spawn on the left side and update LeftSideFree to false.
          */
         bool LeftSideFree = (bool)PhotonNetwork.room.CustomProperties["LeftSideFree"];
-        Vector3 spawnPoint = new Vector3(SpawnDistance, SpawnHeight, -1);
+        Vector3 spawnPoint = new Vector3(SpawnDistance, PlayerYStart, -1);
         if (LeftSideFree)
         {
             spawnPoint.x = -SpawnDistance;
@@ -121,6 +146,9 @@ public class GameManager : Photon.PunBehaviour
 
         // DEBUG
         ServeButton.interactable = true;
+
+        WhiteBallID = WhiteBall.GetComponent<BallController>().photonView.viewID;
+        BlackBallID = BlackBall.GetComponent<BallController>().photonView.viewID;
     }
 
     public override void OnLeftRoom()
