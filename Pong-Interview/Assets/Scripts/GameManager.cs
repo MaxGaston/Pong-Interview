@@ -18,22 +18,10 @@ public class GameManager : Photon.PunBehaviour
     public GameObject WhiteBall;
     public GameObject BlackBall;
 
-    public GameObject LeftScore;
-    public GameObject RightScore;
-
-    private int LeftScoreVal = 0;
-    private int RightScoreVal = 0;
-
-    private int WhiteBallID;
-    private int BlackBallID;
-
     public float SpawnDistance = 12.0f;
 
     private Vector3 LeftSpawnPoint;
     private Vector3 RightSpawnPoint;
-
-    private int LeftScoreID;
-    private int RightScoreID;
     #endregion
 
     #region Functions
@@ -76,8 +64,8 @@ public class GameManager : Photon.PunBehaviour
 
     public void ServeBalls()
     {
-        ServeBall(WhiteBallID);
-        ServeBall(BlackBallID);
+        ServeBall(WhiteBall.GetPhotonView().viewID);
+        ServeBall(BlackBall.GetPhotonView().viewID);
     }
     #endregion
 
@@ -117,39 +105,8 @@ public class GameManager : Photon.PunBehaviour
     [PunRPC]
     public void ResetBalls()
     {
-        ResetBall(WhiteBallID);
-        ResetBall(BlackBallID);
-    }
-
-    /// <summary>
-    /// Logic for handling what happens when a player scores.
-    /// - If the scoring ball is White, add a point.
-    /// - Else if the scoring ball is black, end the game.
-    /// </summary>
-    /// <param name="left">Whether the scoring player is on the left side.</param>
-    /// <param name="id">The viewID of the scoring ball.</param>
-    [PunRPC]
-    public void IncrementScore(bool left, int id)
-    {
-        if(id == WhiteBallID)
-        {
-            GameObject label = left ? LeftScore : RightScore; // Getting the correct score label to update
-            Text text = label.gameObject.GetComponent<Text>();
-
-            int inc = int.Parse(text.text) + 1;
-            text.text = inc.ToString();
-        }
-        else if(id == BlackBallID)
-        {
-            photonView.RPC("ResetScores", PhotonTargets.Others);
-        }
-    }
-
-    [PunRPC]
-    public void ResetScores()
-    {
-        LeftScore.GetComponent<Text>().text = "0";
-        RightScore.GetComponent<Text>().text = "0";
+        ResetBall(WhiteBall.GetPhotonView().viewID);
+        ResetBall(BlackBall.GetPhotonView().viewID);
     }
     #endregion
 
@@ -206,22 +163,12 @@ public class GameManager : Photon.PunBehaviour
 
         // DEBUG
         if(PhotonNetwork.isMasterClient) ServeButton.interactable = true;
-
-        // Get the viewID for each ball to use later.
-        WhiteBallID = WhiteBall.GetComponent<BallController>().photonView.viewID;
-        BlackBallID = BlackBall.GetComponent<BallController>().photonView.viewID;
-
-        // Get the viewID for each of the score labels.
-        LeftScoreID = LeftScore.GetComponent<ScoreManager>().photonView.viewID;
-        RightScoreID = RightScore.GetComponent<ScoreManager>().photonView.viewID;
     }
 
     public override void OnLeftRoom()
     {
         Debug.Log("<color=blue>Left Room</color>");
         LeaveButton.interactable = false;
-
-        ResetScores();
     }
 
     public override void OnPhotonPlayerConnected(PhotonPlayer newPlayer)
@@ -242,8 +189,6 @@ public class GameManager : Photon.PunBehaviour
             Hashtable Props = new Hashtable() { { "LeftSideFree", true } };
             PhotonNetwork.room.SetCustomProperties(Props);
         }
-
-        ResetScores();
     }
 
     private void Awake()

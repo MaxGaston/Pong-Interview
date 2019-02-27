@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
+using ExitGames.Client.Photon;
 
 public class BallController : Photon.PunBehaviour
 {
@@ -7,13 +7,9 @@ public class BallController : Photon.PunBehaviour
     public GameObject GameManager;
     private GameManager GM;
     
-    private float MaxBounceAngle = 75;
     public float BallSpeed;
     public float SpawnHeight;
     private float GoalDistance;
-
-    public GameObject LeftScore;
-    public GameObject RightScore;
     
     private void Start()
     {
@@ -39,19 +35,10 @@ public class BallController : Photon.PunBehaviour
 
     private void FixedUpdate()
     {
-        if(transform.position.x >= GoalDistance) // Ball has exited right side
+        // Ball has left the field
+        if(transform.position.x >= GoalDistance || transform.position.x <= -GoalDistance)
         {
             GM.photonView.RPC("ResetBalls", PhotonTargets.All);
-            GM.photonView.RPC("IncrementScore", PhotonTargets.Others, false, photonView.viewID);
-
-            //LeftScore.GetComponent<ScoreManager>().Increment();
-        }
-        else if(transform.position.x <= -GoalDistance) // Ball has exited left side
-        {
-            GM.photonView.RPC("ResetBalls", PhotonTargets.All);
-            GM.photonView.RPC("IncrementScore", PhotonTargets.Others, true, photonView.viewID);
-
-            //RightScore.GetComponent<ScoreManager>().Increment();
         }
     }
 }
