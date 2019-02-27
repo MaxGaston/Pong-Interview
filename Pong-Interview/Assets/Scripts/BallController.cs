@@ -6,16 +6,13 @@ public class BallController : Photon.PunBehaviour
     public GameObject Player;
     public GameObject GameManager;
     private GameManager GM;
-
-    public Text LeftScore;
-    public Text RightScore;
-
+    
     private float PlayerHeight;
     private float MaxBounceAngle = 75;
     public float BallSpeed;
     public float SpawnHeight;
     private float GoalDistance;
-
+    
     private void Start()
     {
         PlayerHeight = Player.transform.lossyScale.y;
