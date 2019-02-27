@@ -11,7 +11,7 @@ public class BallController : Photon.PunBehaviour
     public Text RightScore;
 
     private float PlayerHeight;
-    private float MaxBounceAngle = 360;
+    private float MaxBounceAngle = 75;
     public float BallSpeed;
     public float SpawnHeight;
     private float GoalDistance;
@@ -54,12 +54,12 @@ public class BallController : Photon.PunBehaviour
 
     private void FixedUpdate()
     {
-        if(transform.position.x >= GoalDistance)
+        if(transform.position.x >= GoalDistance) // Ball has exited right side
         {
             GM.photonView.RPC("ResetBalls", PhotonTargets.All);
             GM.photonView.RPC("IncrementScore", PhotonTargets.Others, false, photonView.viewID);
         }
-        else if(transform.position.x <= -GoalDistance)
+        else if(transform.position.x <= -GoalDistance) // Ball has exited left side
         {
             GM.photonView.RPC("ResetBalls", PhotonTargets.All);
             GM.photonView.RPC("IncrementScore", PhotonTargets.Others, true, photonView.viewID);

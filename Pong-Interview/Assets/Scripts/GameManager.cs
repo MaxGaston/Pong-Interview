@@ -49,12 +49,17 @@ public class GameManager : Photon.PunBehaviour
         PhotonNetwork.LeaveRoom();
     }
 
+    /// <summary>
+    /// Sets the ball given by ballID on a random vector of magnitude BallSpeed.
+    /// </summary>
+    /// <param name="ballID">The viewID of the ball to serve.</param>
     private void ServeBall(int ballID)
     {
         int ping = PhotonNetwork.GetPing();
+
         PhotonView ball = PhotonView.Find(ballID);
 
-        float angle = Random.Range(0, 180);
+        float angle = Random.Range(0, 360);
         float bx = Mathf.Cos(Mathf.Deg2Rad * angle) * ball.GetComponent<BallController>().BallSpeed;
         float by = Mathf.Sin(Mathf.Deg2Rad * angle) * ball.GetComponent<BallController>().BallSpeed;
 
@@ -62,6 +67,7 @@ public class GameManager : Photon.PunBehaviour
 
         ball.transform.position = new Vector3(0, ball.GetComponent<BallController>().SpawnHeight, -1);
         photonView.RPC("UpdateBall", PhotonTargets.Others, ballID, new Vector3(0, ball.GetComponent<BallController>().SpawnHeight, -1), vel, ping);
+
         ball.GetComponent<Rigidbody>().velocity = vel;
     }
 
@@ -70,23 +76,33 @@ public class GameManager : Photon.PunBehaviour
         ServeBall(WhiteBallID);
         ServeBall(BlackBallID);
     }
-
-    
     #endregion
 
     #region RPCs
+
+    /// <summary>
+    /// Sync a ball between both players.
+    /// </summary>
+    /// <param name="ballID">The viewID of the ball to sync.</param>
+    /// <param name="pos">The ball's actual position.</param>
+    /// <param name="vel">The ball's actual velocity.</param>
+    /// <param name="remotePing">Ping from the remote player. Used to compensate for latency.</param>
     [PunRPC]
     public void UpdateBall(int ballID, Vector3 pos, Vector3 vel, int remotePing)
     {
         PhotonView ball = PhotonView.Find(ballID);
 
         int ping = PhotonNetwork.GetPing();
-        float delay = (float)(ping / 2 + remotePing / 2);
+        float delay = (float)(ping / 2 + remotePing / 2); // Getting the round trip time for this message
 
         ball.gameObject.transform.position = pos + (vel * delay / 1000);
         ball.GetComponent<Rigidbody>().velocity = vel;
     }
 
+    /// <summary>
+    /// Place a ball at its starting position and zero its velocity.
+    /// </summary>
+    /// <param name="ballID">The viewID of the ball to reset.</param>
     [PunRPC]
     public void ResetBall(int ballID)
     {
@@ -94,7 +110,7 @@ public class GameManager : Photon.PunBehaviour
         ball.gameObject.transform.position = new Vector3(0, ball.gameObject.GetComponent<BallController>().SpawnHeight, -1);
         ball.gameObject.GetComponent<Rigidbody>().velocity *= 0;
     }
-
+    
     [PunRPC]
     public void ResetBalls()
     {
@@ -102,12 +118,19 @@ public class GameManager : Photon.PunBehaviour
         ResetBall(BlackBallID);
     }
 
+    /// <summary>
+    /// Logic for handling what happens when a player scores.
+    /// - If the scoring ball is White, add a point.
+    /// - Else if the scoring ball is black, end the game.
+    /// </summary>
+    /// <param name="left">Whether the scoring player is on the left side.</param>
+    /// <param name="id">The viewID of the scoring ball.</param>
     [PunRPC]
     public void IncrementScore(bool left, int id)
     {
         if(id == WhiteBallID)
         {
-            GameObject label = left ? LeftScore : RightScore;
+            GameObject label = left ? LeftScore : RightScore; // Getting the correct score label to update
             Text text = label.gameObject.GetComponent<Text>();
 
             int inc = int.Parse(text.text) + 1;
@@ -185,6 +208,7 @@ public class GameManager : Photon.PunBehaviour
         WhiteBallID = WhiteBall.GetComponent<BallController>().photonView.viewID;
         BlackBallID = BlackBall.GetComponent<BallController>().photonView.viewID;
 
+        // Get the viewID for each of the score labels.
         LeftScoreID = LeftScore.GetComponent<ScoreManager>().photonView.viewID;
         RightScoreID = RightScore.GetComponent<ScoreManager>().photonView.viewID;
     }
@@ -228,6 +252,7 @@ public class GameManager : Photon.PunBehaviour
         PhotonNetwork.logLevel = LogLevel;
     }
 
+    // Connect to the network and initialize some properties.
     private void Start()
     {
         PhotonNetwork.ConnectUsingSettings("1.0");
